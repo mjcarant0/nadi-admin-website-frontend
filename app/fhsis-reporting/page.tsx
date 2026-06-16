@@ -9,8 +9,11 @@ import { MonthlySubmissionProgressChart, ReportCompletenessChart, SubmissionTren
 import { FHSISFacilityTable } from '@/components/fhsis-facility-table'
 import { FHSISSidebar } from '@/components/fhsis-sidebar'
 import { Footer } from '@/components/footer'
+import { useSidebar } from '@/components/sidebar-context'
 
 export default function FHSISReportingPage() {
+  const { isCollapsed } = useSidebar()
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Sidebar />
@@ -21,7 +24,7 @@ export default function FHSISReportingPage() {
       />
 
       {/* Main Content */}
-      <main className="ml-64 pt-24 px-8 pb-8 flex-1">
+      <main className={`pt-24 px-8 pb-8 flex-1 content-transition ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         {/* Alert Banner */}
         <FHSISAlert />
 

@@ -7,8 +7,11 @@ import { BHWAlert } from '@/components/bhw-alert'
 import { BHWKPI } from '@/components/bhw-kpi'
 import { BHWTabs } from '@/components/bhw-tabs'
 import { BHWRegionalTable, BHWCharts, BHWSidebar } from '@/components/bhw-content'
+import { useSidebar } from '@/components/sidebar-context'
 
 export default function BHWCoverage() {
+  const { isCollapsed } = useSidebar()
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Sidebar />
@@ -18,7 +21,7 @@ export default function BHWCoverage() {
         showExportMap={false} 
       />
 
-      <main className="ml-64 pt-24 px-8 pb-8 flex-1">
+      <main className={`pt-24 px-8 pb-8 flex-1 content-transition ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         <BHWAlert />
         <BHWKPI />
         <BHWTabs />

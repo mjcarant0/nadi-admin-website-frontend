@@ -9,8 +9,11 @@ import { NationalANCCoverageTrendChart, ANCVisitCompletionFunnel, CohortPerforma
 import { ANCRegionalRankings, BenchmarkComparisonCard } from '@/components/anc-regional-rankings'
 import { InterventionFlagsCard } from '@/components/anc-intervention-flags'
 import { Footer } from '@/components/footer'
+import { useSidebar } from '@/components/sidebar-context'
 
 export default function ANCAnalyticsPage() {
+  const { isCollapsed } = useSidebar()
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Sidebar />
@@ -21,7 +24,7 @@ export default function ANCAnalyticsPage() {
       />
 
       {/* Main Content */}
-      <main className="ml-64 pt-24 px-8 pb-8 flex-1">
+      <main className={`pt-24 px-8 pb-8 flex-1 content-transition ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         {/* Coverage Alert Banner */}
         <ANCCoverageAlert />
 

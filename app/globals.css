@@ -156,6 +156,111 @@
   }
 }
 
+/* Scrollbar Hiding - Hide scrollbars globally but keep functionality */
+html,
+body,
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+button,
+a,
+input,
+select,
+textarea {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+/* Sidebar toggle animation classes */
+.sidebar-expanded {
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.sidebar-collapsed {
+  animation: slideOutLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Content transition */
+.content-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Fade-in effect for page content */
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out forwards;
+}
+
+/* Hover effect enhancements */
+.hover-lift {
+  @apply transition-transform duration-200 hover:scale-105 hover:shadow-lg;
+}
+
+.hover-smooth {
+  @apply transition-all duration-200 hover:brightness-110;
+}
+
+/* Card animation */
+.card-animate {
+  animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

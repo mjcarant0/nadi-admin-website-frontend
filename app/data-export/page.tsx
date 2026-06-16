@@ -6,8 +6,11 @@ import { Footer } from '@/components/footer'
 import { ExportAlert } from '@/components/export-alert'
 import { ExportConfiguration, ExportHistory } from '@/components/export-config'
 import { ExportStats } from '@/components/export-sidebar'
+import { useSidebar } from '@/components/sidebar-context'
 
 export default function DataExport() {
+  const { isCollapsed } = useSidebar()
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Sidebar />
@@ -17,7 +20,7 @@ export default function DataExport() {
         showExportMap={false} 
       />
 
-      <main className="ml-64 pt-24 px-8 pb-8 flex-1">
+      <main className={`pt-24 px-8 pb-8 flex-1 content-transition ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         <ExportAlert />
 
         <div className="grid grid-cols-[1fr_300px] gap-6">

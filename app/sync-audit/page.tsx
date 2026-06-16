@@ -9,8 +9,11 @@ import { SyncActivityChart, SyncLatencyChart, ValidationOutcomesChart } from '@/
 import { SyncNodeTable } from '@/components/sync-node-table'
 import { SyncSidebar } from '@/components/sync-sidebar'
 import { Footer } from '@/components/footer'
+import { useSidebar } from '@/components/sidebar-context'
 
 export default function SyncAuditDashboard() {
+  const { isCollapsed } = useSidebar()
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Sidebar />
@@ -20,7 +23,7 @@ export default function SyncAuditDashboard() {
         showExportMap={false}
       />
 
-      <main className="ml-64 pt-24 px-8 pb-8 flex-1">
+      <main className={`pt-24 px-8 pb-8 flex-1 content-transition ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         {/* Alert */}
         <SyncAuditAlert />
 

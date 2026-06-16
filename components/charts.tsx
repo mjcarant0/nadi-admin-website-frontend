@@ -109,7 +109,7 @@ export function PerformanceBreakdownChart() {
 }
 
 export function DangerSignsChart() {
-  const sortedData = dangerSignsData.sort((a, b) => b.value - a.value)
+  const sortedData = [...dangerSignsData].sort((a, b) => b.value - a.value)
   
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm col-span-1">

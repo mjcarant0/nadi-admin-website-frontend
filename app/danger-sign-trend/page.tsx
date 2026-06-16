@@ -8,8 +8,11 @@ import { DangerSignTabs } from '@/components/danger-sign-tabs'
 import { DangerSignTimeSeriesChart, RegionalCaseDistributionChart, DangerSignDistributionChart } from '@/components/danger-sign-charts'
 import { DangerSignSidebar } from '@/components/danger-sign-sidebar'
 import { Footer } from '@/components/footer'
+import { useSidebar } from '@/components/sidebar-context'
 
 export default function DangerSignTrendPage() {
+  const { isCollapsed } = useSidebar()
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Sidebar />
@@ -20,7 +23,7 @@ export default function DangerSignTrendPage() {
       />
 
       {/* Main Content */}
-      <main className="ml-64 pt-24 px-8 pb-8 flex-1">
+      <main className={`pt-24 px-8 pb-8 flex-1 content-transition ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         {/* Alert Banner */}
         <DangerSignAlert />
 
