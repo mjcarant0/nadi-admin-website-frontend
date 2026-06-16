@@ -45,7 +45,7 @@ export function KPICards() {
       {cards.map((card, idx) => (
         <div 
           key={idx}
-          className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 hover:scale-105 hover:-translate-y-1 card-animate cursor-pointer"
+          className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm card-animate flashcard-interactive"
           style={{ animationDelay: card.delay }}
         >
           <p className="text-sm text-slate-500 font-medium mb-2 transition-colors duration-300">{card.title}</p>

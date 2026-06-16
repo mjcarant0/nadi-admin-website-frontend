@@ -39,7 +39,7 @@ export function GISKPICards() {
       {cards.map((card, idx) => {
         const IconComponent = card.icon
         return (
-          <div key={idx} className="bg-white p-4 rounded-lg border border-slate-200">
+          <div key={idx} className="bg-white p-4 rounded-lg border border-slate-200 flashcard-interactive">
             <div className={`w-12 h-12 ${card.iconBg} rounded-lg flex items-center justify-center mb-3`}>
               <IconComponent className={`w-6 h-6 ${card.iconColor}`} />
             </div>

@@ -66,7 +66,7 @@ export function NodeKPICards() {
       {cards.map((card, idx) => {
         const Icon = card.icon
         return (
-          <div key={idx} className={`bg-white border border-slate-200 rounded-lg p-4 ${card.borderColor}`}>
+          <div key={idx} className={`bg-white border border-slate-200 rounded-lg p-4 flashcard-interactive ${card.borderColor}`}>
             <div className="flex items-start justify-between mb-3">
               <Icon className={`w-5 h-5 ${card.statusColor}`} />
               {card.status && <span className={`text-xs font-semibold ${card.statusColor}`}>{card.status}</span>}

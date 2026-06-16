@@ -14,9 +14,9 @@ export function MapControls() {
         
         {/* Location Toggle Group */}
         <div className="flex gap-2 bg-slate-100 p-1 rounded-lg">
-          <button className="px-4 py-2 rounded bg-slate-900 text-white text-sm font-medium">National</button>
-          <button className="px-4 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white">Regional</button>
-          <button className="px-4 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white">Municipal</button>
+          <button className="px-4 py-2 rounded bg-slate-900 text-white text-sm font-medium pill-interactive">National</button>
+          <button className="px-4 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white pill-interactive">Regional</button>
+          <button className="px-4 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white pill-interactive">Municipal</button>
         </div>
       </div>
 
@@ -29,14 +29,14 @@ export function MapControls() {
         
         {/* Layer Toggle Group */}
         <div className="flex gap-2 bg-slate-100 p-1 rounded-lg">
-          <button className="px-3 py-2 rounded bg-slate-900 text-white text-sm font-medium">Risk Intensity</button>
-          <button className="px-3 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white">Hotspot Clusters</button>
-          <button className="px-3 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white">ANC Gap</button>
-          <button className="px-3 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white">Danger Signs</button>
+          <button className="px-3 py-2 rounded bg-slate-900 text-white text-sm font-medium pill-interactive">Risk Intensity</button>
+          <button className="px-3 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white pill-interactive">Hotspot Clusters</button>
+          <button className="px-3 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white pill-interactive">ANC Gap</button>
+          <button className="px-3 py-2 rounded text-slate-700 text-sm font-medium hover:bg-white pill-interactive">Danger Signs</button>
         </div>
 
         {/* Compare Regions Button */}
-        <button className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">
+        <button className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 pill-interactive">
           Compare Regions
         </button>
       </div>

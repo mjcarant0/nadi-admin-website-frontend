@@ -23,7 +23,7 @@ export function NodeStatusTable() {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6">
+    <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 table-animate">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">Node Status by Region</h3>
       <p className="text-sm text-slate-600 mb-4">Real-time health, uptime, last sync, and operational readiness per region</p>
       <div className="overflow-x-auto">

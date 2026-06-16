@@ -25,7 +25,7 @@ export function FHSISFacilityTable() {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6">
+    <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 table-animate">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-slate-900">Facility Report Status by Region</h3>
         <p className="text-sm text-slate-500">Submission status, completeness, and validation flags per region</p>

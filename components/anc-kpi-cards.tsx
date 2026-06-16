@@ -17,7 +17,7 @@ function KPICard({ icon, trend, trendColor, value, label, progressColor, progres
   const isPositive = trend > 0
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-4">
+    <div className="bg-white border border-slate-200 rounded-lg p-4 flashcard-interactive">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="text-slate-600">{icon}</div>

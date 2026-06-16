@@ -8,7 +8,7 @@ export function FHSISKPICards() {
       {/* Left group of 4 */}
       <div className="grid grid-cols-4 gap-4 col-span-4">
         {/* Submission Rate */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flashcard-interactive">
           <div className="flex items-start justify-between mb-3">
             <Folder className="w-5 h-5 text-blue-600" />
             <span className="text-sm font-semibold text-blue-600">+6.2%</span>
@@ -18,7 +18,7 @@ export function FHSISKPICards() {
         </div>
 
         {/* Reports Submitted */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flashcard-interactive">
           <div className="flex items-start justify-between mb-3">
             <CheckCircle className="w-5 h-5 text-green-600" />
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600">
@@ -31,7 +31,7 @@ export function FHSISKPICards() {
         </div>
 
         {/* Awaiting Submission */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flashcard-interactive">
           <div className="flex items-start justify-between mb-3">
             <Clock className="w-5 h-5 text-yellow-600" />
             <span className="text-xs font-semibold text-yellow-600 bg-yellow-100 px-2 py-1 rounded">Pending</span>
@@ -41,7 +41,7 @@ export function FHSISKPICards() {
         </div>
 
         {/* Validation Errors */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flashcard-interactive">
           <div className="flex items-start justify-between mb-3">
             <AlertCircle className="w-5 h-5 text-red-600" />
             <span className="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded">Critical</span>
@@ -52,7 +52,7 @@ export function FHSISKPICards() {
       </div>
 
       {/* Right side - Compliance Score */}
-      <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 text-white">
+      <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 text-white flashcard-interactive">
         <div className="flex items-start justify-between mb-3">
           <Shield className="w-5 h-5" />
           <span className="text-xs font-semibold bg-yellow-500 text-slate-900 px-2 py-1 rounded">8 days left</span>

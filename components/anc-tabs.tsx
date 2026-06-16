@@ -27,7 +27,7 @@ export function ANCTabs() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors tab-interactive ${
               activeTab === tab.id
                 ? 'bg-slate-900 text-white border-b-slate-900'
                 : 'text-slate-600 border-b-transparent hover:text-slate-900'

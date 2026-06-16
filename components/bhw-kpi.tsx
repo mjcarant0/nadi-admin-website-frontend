@@ -68,7 +68,7 @@ export function BHWKPI() {
       {kpis.map((kpi, idx) => {
         const Icon = kpi.icon
         return (
-          <div key={idx} className={`border ${kpi.borderColor} rounded-lg p-4 ${kpi.bgColor}`}>
+          <div key={idx} className={`border ${kpi.borderColor} rounded-lg p-4 ${kpi.bgColor} flashcard-interactive`}>
             <div className="flex items-start justify-between mb-3">
               <Icon className={`w-5 h-5 ${kpi.color}`} />
               <span className={`text-xs font-semibold ${kpi.color}`}>{kpi.label}</span>

@@ -56,7 +56,7 @@ export function DangerSignKPI() {
       {cards.map((card, i) => {
         const Icon = card.icon
         return (
-          <div key={i} className={`${card.bgColor} border ${card.borderColor} border-b-4 rounded-lg p-4`}>
+          <div key={i} className={`${card.bgColor} border ${card.borderColor} border-b-4 rounded-lg p-4 flashcard-interactive`}>
             <div className="flex items-start justify-between mb-3">
               <Icon className="w-5 h-5 text-slate-600" />
               <span className={`text-sm font-semibold ${card.changeColor}`}>{card.change}</span>

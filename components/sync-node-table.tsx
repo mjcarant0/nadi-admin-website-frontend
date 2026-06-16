@@ -23,7 +23,7 @@ export function SyncNodeTable() {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6">
+    <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 table-animate">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">Node Sync Status by Region</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
