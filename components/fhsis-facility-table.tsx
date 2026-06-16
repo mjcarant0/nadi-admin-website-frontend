@@ -1,34 +1,34 @@
 'use client'
 
 import { CheckCircle, Clock, AlertCircle } from 'lucide-react'
+import {
+  fhsisFacilityRows,
+  type FHSISFacilityRow,
+  type FacilityStatus,
+} from '@/lib/mock-data'
+
+function getStatusIcon(status: FacilityStatus) {
+  if (status === 'Submitted') return <CheckCircle className="w-4 h-4 text-green-600" />
+  if (status === 'Partial') return <Clock className="w-4 h-4 text-yellow-600" />
+  return <AlertCircle className="w-4 h-4 text-red-600" />
+}
+
+function getStatusBadge(status: FacilityStatus) {
+  if (status === 'Submitted') return 'bg-green-100 text-green-700'
+  if (status === 'Partial') return 'bg-yellow-100 text-yellow-700'
+  return 'bg-red-100 text-red-700'
+}
 
 export function FHSISFacilityTable() {
-  const facilities = [
-    { region: 'NCR', facilities: '214 of 218', status: 'Submitted', completeness: 98.2, submitted: 'Jun 2, 2025', errors: 0, deadline: 'Met' },
-    { region: 'Central Luzon', facilities: '187 of 192', status: 'Submitted', completeness: 97.4, submitted: 'Jun 4, 2025', errors: 2, deadline: 'Met' },
-    { region: 'CALABARZON', facilities: '142 of 176', status: 'Partial', completeness: 80.7, submitted: 'In Progress', errors: 7, deadline: '2 days' },
-    { region: 'BARMM', facilities: '78 of 134', status: 'Critical', completeness: 58.2, submitted: 'Not Started', errors: 21, deadline: 'At Risk' },
-    { region: 'Caraga', facilities: '61 of 95', status: 'Critical', completeness: 62.2, submitted: 'In Progress', errors: 18, deadline: 'At Risk' },
-    { region: 'Eastern Visayas', facilities: '100 of 141', status: 'Partial', completeness: 77.3, submitted: 'In Progress', errors: 11, deadline: '5 days' }
-  ]
-
-  const getStatusIcon = (status: string) => {
-    if (status === 'Submitted') return <CheckCircle className="w-4 h-4 text-green-600" />
-    if (status === 'Partial') return <Clock className="w-4 h-4 text-yellow-600" />
-    return <AlertCircle className="w-4 h-4 text-red-600" />
-  }
-
-  const getStatusColor = (status: string) => {
-    if (status === 'Submitted') return 'bg-green-100 text-green-700'
-    if (status === 'Partial') return 'bg-yellow-100 text-yellow-700'
-    return 'bg-red-100 text-red-700'
-  }
+  const facilities: FHSISFacilityRow[] = fhsisFacilityRows
 
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 table-animate">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-slate-900">Facility Report Status by Region</h3>
-        <p className="text-sm text-slate-500">Submission status, completeness, and validation flags per region</p>
+        <p className="text-sm text-slate-500">
+          Submission status, completeness, and validation flags per region
+        </p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -43,8 +43,8 @@ export function FHSISFacilityTable() {
             </tr>
           </thead>
           <tbody>
-            {facilities.map((facility, i) => (
-              <tr key={i} className="border-b border-slate-200 hover:bg-slate-50">
+            {facilities.map((facility) => (
+              <tr key={facility.id} className="border-b border-slate-200 hover:bg-slate-50">
                 <td className="px-4 py-3">
                   <p className="font-semibold text-slate-900">{facility.region}</p>
                   <p className="text-xs text-slate-500">{facility.facilities}</p>
@@ -52,7 +52,11 @@ export function FHSISFacilityTable() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     {getStatusIcon(facility.status)}
-                    <span className={`text-xs font-semibold px-2 py-1 rounded ${getStatusColor(facility.status)}`}>
+                    <span
+                      className={`text-xs font-semibold px-2 py-1 rounded ${getStatusBadge(
+                        facility.status
+                      )}`}
+                    >
                       {facility.status}
                     </span>
                   </div>
@@ -60,19 +64,34 @@ export function FHSISFacilityTable() {
                 <td className="px-4 py-3">
                   <div className="w-24">
                     <div className="bg-slate-200 rounded-full h-2 mb-1">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${facility.completeness}%` }}></div>
+                      <div
+                        className="bg-blue-600 h-2 rounded-full"
+                        style={{ width: `${facility.completeness}%` }}
+                      />
                     </div>
                     <p className="text-xs font-semibold text-slate-900">{facility.completeness}%</p>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-slate-700">{facility.submitted}</td>
                 <td className="px-4 py-3">
-                  <span className={facility.errors === 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                  <span
+                    className={
+                      facility.errors === 0
+                        ? 'text-green-600 font-semibold'
+                        : 'text-red-600 font-semibold'
+                    }
+                  >
                     {facility.errors}
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <span className={facility.deadline === 'Met' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                  <span
+                    className={
+                      facility.deadline === 'Met'
+                        ? 'text-green-600 font-semibold'
+                        : 'text-red-600 font-semibold'
+                    }
+                  >
                     {facility.deadline}
                   </span>
                 </td>
