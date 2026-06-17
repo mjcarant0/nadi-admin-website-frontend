@@ -24,12 +24,17 @@ app/
 
 ## Run
 
-Brought up automatically by the mobile repo's `docker compose up` as the
-`admin_api` service (port 8100). Standalone:
+This service has its own `docker-compose.yml`. It does **not** start a database —
+it attaches read-only to the shared `nadi_db` owned and migrated by
+`NADI-mobile-app-Backend`, so bring that stack's DB up first.
 
 ```bash
-cp .env.example .env
-docker build -t nadi-admin . && docker run --env-file .env -p 8100:8100 nadi-admin
+# 1. Start the shared DB from the mobile repo (once):
+(cd ../NADI-mobile-app-Backend && docker compose up -d db migrate)
+
+# 2. Then start the admin API from this repo:
+cp .env.example .env          # SECRET_KEY must match the mobile backend's
+docker compose up -d          # admin_api on port 8100
 ```
 
 - API docs: http://localhost:8100/docs
