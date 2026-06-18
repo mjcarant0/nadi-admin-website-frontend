@@ -8,10 +8,12 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     DATABASE_SYNC_URL: str = ""
 
-    # Auth — same SECRET_KEY/ALGORITHM as the mobile backend so JWTs verify,
-    # but this service only issues/accepts ADMIN-role tokens.
-    SECRET_KEY: str
-    ALGORITHM: str = "HS256"
+    # Auth (asymmetric RS256 — no shared secret with the mobile backend).
+    # This service signs ADMIN tokens with its own private key and verifies
+    # tokens against every listed public key (its own + the mobile backend's).
+    JWT_ALGORITHM: str = "RS256"
+    JWT_PRIVATE_KEY_PATH: str = "keys/jwt_admin_private.pem"
+    JWT_PUBLIC_KEY_PATHS: str = "keys/jwt_admin_public.pem,keys/jwt_mobile_public.pem"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     ENVIRONMENT: str = "development"
