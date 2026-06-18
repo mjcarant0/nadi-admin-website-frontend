@@ -1,0 +1,28 @@
+# N.A.D.I. admin website backend — standalone stack.
+# Read-only analytics API over the shared PostGIS `nadi_db`. The database is
+# owned and migrated by NADI-mobile-app-Backend; this compose does NOT define a
+# `db` service. Instead it attaches to the network that the mobile stack creates
+# so it can reach host `db:5432`.
+#
+# Usage:
+#   1. Bring up the DB from the mobile repo first:
+#        (cd ../NADI-mobile-app-Backend && docker compose up -d db migrate)
+#   2. Then from this repo:
+#        docker compose up -d
+services:
+  admin_api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8100
+    env_file: .env
+    ports: ["8100:8100"]
+    networks:
+      - default
+      - nadi_shared
+
+networks:
+  # The default network created by NADI-mobile-app-Backend's compose, where the
+  # `db` service lives. If your mobile stack uses a different project name, run
+  # `docker network ls` and update the name below.
+  nadi_shared:
+    external: true
+    name: nadi-mobile-app-backend_default
