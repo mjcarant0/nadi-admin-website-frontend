@@ -41,7 +41,7 @@ export function SyncNodeTable() {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6">
+    <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 table-animate">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">Per-BHW Sync Status</h3>
 
       {loading && <p className="text-sm text-slate-500 py-8 text-center">Loading sync log…</p>}

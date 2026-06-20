@@ -1,8 +1,29 @@
 'use client'
 
-import { BarChart, Bar, LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts'
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts'
 import { api } from '@/lib/api'
 import { useApi } from '@/lib/use-api'
+import {
+  bhwRegionalData,
+  bhwMonthlyTrend,
+  bhwCoverageCategories,
+  bhwCoverageGaps,
+  type BHWRegionalRow,
+  type BHWTrendPoint,
+  type BHWCoverageCategory,
+  type BHWCoverageGap,
+} from '@/lib/mock-data'
 
 function relativeTime(iso: string | null): string {
   if (!iso) return 'never'
@@ -11,37 +32,15 @@ function relativeTime(iso: string | null): string {
   return `${days}d ago`
 }
 
-const regions = [
-  { region: 'NCR', barangays: '1,708', active: 6824, inactive: 0, gida: 'None', ratio: '1:17', coverage: 100 },
-  { region: 'Central Luzon', barangays: '3,102', active: 5814, inactive: 0, gida: 'None', ratio: '1:19', coverage: 100 },
-  { region: 'CALABARZON', barangays: '4,010', active: 6219, inactive: 0, gida: '3 areas', ratio: '1:20', coverage: 99.4 },
-  { region: 'Eastern Visayas', barangays: '4,390', active: 2891, inactive: 500, gida: '47 areas', ratio: '1:23', coverage: 82.3 },
-  { region: 'Davao Region', barangays: '1,162', active: 4102, inactive: 0, gida: '12 areas', ratio: '1:18', coverage: 97.8 },
-  { region: 'BARMM', barangays: '2,241', active: 1204, inactive: 312, gida: '312 areas', ratio: '1:28', coverage: 53.7 }
-]
-
-const bhwData = [
-  { month: 'Jan', active: 37500, inactive: 2800 },
-  { month: 'Feb', active: 37800, inactive: 2700 },
-  { month: 'Mar', active: 38200, inactive: 2500 },
-  { month: 'Apr', active: 38500, inactive: 2300 },
-  { month: 'May', active: 38800, inactive: 2100 },
-  { month: 'Jun', active: 38941, inactive: 1875 }
-]
-
-const riskData = [
-  { name: 'Fully Covered', value: 33218, color: '#10b981' },
-  { name: 'Partial', value: 7864, color: '#f59e0b' },
-  { name: 'Zero Coverage', value: 964, color: '#ef4444' },
-  { name: 'GIDA', value: 5842, color: '#9ca3af' }
-]
+// ─── BHW Regional Table ───────────────────────────────────────
+// Live data: backed by the real /admin/audit/bhw-coverage endpoint.
 
 export function BHWRegionalTable() {
   const { data, error, loading } = useApi(() => api.bhwCoverage(), [])
   const rows = data ?? []
 
   return (
-    <div className="border border-slate-200 rounded-lg p-6 mb-6 bg-white">
+    <div className="border border-slate-200 rounded-lg p-6 mb-6 bg-white table-animate">
       <h3 className="text-sm font-semibold text-slate-900 mb-4">
         Barangay Coverage Status (ACTIVE vs SILENT — 30-day threshold)
       </h3>
@@ -98,34 +97,65 @@ export function BHWRegionalTable() {
   )
 }
 
+// ─── BHW Charts ───────────────────────────────────────────────
+// NOTE: mock data — the backend has no regional-aggregation / monthly-trend
+// endpoint yet. Wire to the real API once those endpoints exist.
+
 export function BHWCharts() {
+  const trend: BHWTrendPoint[] = bhwMonthlyTrend
+  const regions: BHWRegionalRow[] = bhwRegionalData
+  const barData = regions.map((r) => ({
+    name: r.region.slice(0, 3),
+    active: r.active,
+    inactive: r.inactive,
+  }))
+
   return (
     <div className="grid grid-cols-2 gap-6 mb-6">
       <div className="border border-slate-200 rounded-lg p-6 bg-white">
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">BHW Active vs Inactive — By Region</h3>
+        <h3 className="text-sm font-semibold text-slate-900 mb-4">
+          BHW Active vs Inactive — By Region
+        </h3>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={regions.map(r => ({ name: r.region.slice(0, 3), active: r.active, inactive: r.inactive }))}>
+          <BarChart data={barData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey="name" stroke="#64748b" style={{ fontSize: '12px' }} />
             <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
             <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }} />
-            <Bar dataKey="active" fill="#10b981" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="inactive" fill="#ef4444" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="active" fill="#10b981" name="Active" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="inactive" fill="#ef4444" name="Inactive" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       <div className="border border-slate-200 rounded-lg p-6 bg-white">
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">Barangay Coverage Trend — 6 Months</h3>
+        <h3 className="text-sm font-semibold text-slate-900 mb-4">
+          Barangay Coverage Trend — 6 Months
+        </h3>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={bhwData}>
+          <LineChart data={trend}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey="month" stroke="#64748b" style={{ fontSize: '12px' }} />
             <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
             <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }} />
             <Legend />
-            <Line type="monotone" dataKey="active" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6' }} />
-            <Line type="monotone" dataKey="inactive" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#f59e0b' }} />
+            <Line
+              type="monotone"
+              dataKey="active"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              dot={{ fill: '#3b82f6' }}
+              name="Active"
+            />
+            <Line
+              type="monotone"
+              dataKey="inactive"
+              stroke="#f59e0b"
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={{ fill: '#f59e0b' }}
+              name="Inactive"
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -133,79 +163,106 @@ export function BHWCharts() {
   )
 }
 
+// ─── BHW Sidebar ──────────────────────────────────────────────
+// NOTE: mock data — no backend endpoint yet for coverage categories / gaps.
+
 export function BHWSidebar() {
+  const categories: BHWCoverageCategory[] = bhwCoverageCategories
+  const gaps: BHWCoverageGap[] = bhwCoverageGaps
+  const regions: BHWRegionalRow[] = bhwRegionalData
+
+  // Derive national coverage % dynamically
+  const fullyCovered = categories.find((c) => c.name === 'Fully Covered')
+  const total = categories.reduce((s, c) => s + c.value, 0)
+  const nationalPct = total > 0 && fullyCovered
+    ? ((fullyCovered.value / total) * 100).toFixed(1)
+    : '—'
+
+  const categoryColors: Record<string, string> = {
+    'Fully Covered': 'bg-green-600',
+    Partial: 'bg-yellow-500',
+    'Zero Coverage': 'bg-red-600',
+    GIDA: 'bg-slate-400',
+  }
+
   return (
     <div className="space-y-4">
+      {/* National Coverage Summary */}
       <div className="border border-slate-200 rounded-lg p-4 bg-white">
         <p className="text-xs font-semibold text-slate-500 mb-3">National Coverage Summary</p>
-        <p className="text-3xl font-bold text-green-600 mb-4">90.9%</p>
+        <p className="text-3xl font-bold text-green-600 mb-4">{nationalPct}%</p>
         <div className="space-y-2 text-xs">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-600"></div>
-              <span className="text-slate-600">Fully Covered Barangays</span>
+          {categories.slice(0, 3).map((cat) => (
+            <div key={cat.name} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${categoryColors[cat.name] ?? 'bg-slate-400'}`}
+                />
+                <span className="text-slate-600">{cat.name}</span>
+              </div>
+              <span className="font-semibold text-slate-900">{cat.value.toLocaleString()}</span>
             </div>
-            <span className="font-semibold text-slate-900">33,218</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-              <span className="text-slate-600">Partial Coverage</span>
-            </div>
-            <span className="font-semibold text-slate-900">7,864</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-red-600"></div>
-              <span className="text-slate-600">Zero Coverage</span>
-            </div>
-            <span className="font-semibold text-slate-900">964</span>
-          </div>
+          ))}
         </div>
       </div>
 
+      {/* Coverage Ranking */}
       <div className="border border-slate-200 rounded-lg p-4 bg-white">
         <p className="text-xs font-semibold text-slate-500 mb-3">Coverage Ranking by Region</p>
         <div className="space-y-2 text-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-slate-600">NCR</span>
-            <span className="font-semibold text-green-600">100%</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-600">C. Luzon</span>
-            <span className="font-semibold text-green-600">100%</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-600">Davao</span>
-            <span className="font-semibold text-green-600">97.8%</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-600">MIMAROPA</span>
-            <span className="font-semibold text-red-600">61.4%</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-600">BARMM</span>
-            <span className="font-semibold text-red-600">53.7%</span>
-          </div>
+          {[...regions]
+            .sort((a, b) => b.coverage - a.coverage)
+            .map((r) => (
+              <div key={r.id} className="flex items-center justify-between">
+                <span className="text-slate-600">{r.region.slice(0, 10)}</span>
+                <span
+                  className={`font-semibold ${
+                    r.coverage >= 90
+                      ? 'text-green-600'
+                      : r.coverage >= 75
+                      ? 'text-yellow-600'
+                      : 'text-red-600'
+                  }`}
+                >
+                  {r.coverage}%
+                </span>
+              </div>
+            ))}
         </div>
       </div>
 
+      {/* Service Coverage Gaps */}
       <div className="border border-slate-200 rounded-lg p-4 bg-white">
         <p className="text-xs font-semibold text-slate-500 mb-3">Service Coverage Gaps</p>
-        <p className="text-xs font-semibold text-red-600 mb-3">5 Critical</p>
+        <p className="text-xs font-semibold text-red-600 mb-3">
+          {gaps.filter((g) => g.severity === 'critical').length} Critical
+        </p>
         <div className="space-y-2 text-xs">
-          <div className="p-2 bg-red-50 rounded border border-red-200">
-            <p className="font-semibold text-red-700">Zero BHW — 14 GIDA Barangays</p>
-            <p className="text-red-600 text-xs">BARMM (8) • MIMAROPA (5)</p>
-          </div>
-          <div className="p-2 bg-red-50 rounded border border-red-200">
-            <p className="font-semibold text-red-700">Over-Ratio Alert — BARMM</p>
-            <p className="text-red-600 text-xs">Avg ratio 1:28</p>
-          </div>
-          <div className="p-2 bg-yellow-50 rounded border border-yellow-200">
-            <p className="font-semibold text-yellow-700">High Inactivity — Eastern Visayas</p>
-            <p className="text-yellow-600 text-xs">18% inactive rate</p>
-          </div>
+          {gaps.map((gap) => (
+            <div
+              key={gap.id}
+              className={`p-2 rounded border ${
+                gap.severity === 'critical'
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-yellow-50 border-yellow-200'
+              }`}
+            >
+              <p
+                className={`font-semibold ${
+                  gap.severity === 'critical' ? 'text-red-700' : 'text-yellow-700'
+                }`}
+              >
+                {gap.title}
+              </p>
+              <p
+                className={`text-xs ${
+                  gap.severity === 'critical' ? 'text-red-600' : 'text-yellow-600'
+                }`}
+              >
+                {gap.detail}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

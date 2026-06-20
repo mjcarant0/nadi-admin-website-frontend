@@ -16,7 +16,7 @@ export function BHWTabs() {
         return (
           <button
             key={idx}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors tab-interactive ${
               tab.active
                 ? 'bg-slate-900 text-white'
                 : 'text-slate-600 hover:bg-slate-100'

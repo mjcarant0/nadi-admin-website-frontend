@@ -258,7 +258,46 @@ textarea {
 
 /* Card animation */
 .card-animate {
-  animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Table animation */
+.table-animate {
+  animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Flashcard Interactive */
+.flashcard-interactive {
+  @apply cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:bg-slate-900 hover:border-slate-800 active:scale-[0.98] active:bg-slate-800;
+}
+
+.flashcard-interactive .text-slate-900,
+.flashcard-interactive .text-slate-600,
+.flashcard-interactive .text-slate-500 {
+  @apply transition-colors duration-300;
+}
+
+.flashcard-interactive:hover .text-slate-900,
+.flashcard-interactive:hover .text-slate-600,
+.flashcard-interactive:hover .text-slate-500 {
+  @apply text-white;
+}
+
+.flashcard-interactive .bg-slate-200 {
+  @apply transition-colors duration-300;
+}
+
+.flashcard-interactive:hover .bg-slate-200 {
+  @apply bg-slate-700;
+}
+
+/* Interactive Clickables */
+.tab-interactive {
+  @apply transition-all duration-300 ease-in-out cursor-pointer hover:bg-slate-50 active:scale-95 active:opacity-80;
+}
+
+.pill-interactive {
+  @apply transition-all duration-300 ease-in-out cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-95 active:translate-y-0 active:shadow-none;
 }
 
 @layer base {

@@ -16,7 +16,7 @@ export function NodeTabs() {
         return (
           <button
             key={idx}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors relative ${
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors relative tab-interactive ${
               tab.active
                 ? 'border-b-slate-900 text-slate-900'
                 : 'border-b-transparent text-slate-600 hover:text-slate-900'
