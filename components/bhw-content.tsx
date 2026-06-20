@@ -1,3 +1,5 @@
+'use client'
+
 import {
   BarChart,
   Bar,
@@ -10,6 +12,8 @@ import {
   Tooltip,
   Legend,
 } from 'recharts'
+import { api } from '@/lib/api'
+import { useApi } from '@/lib/use-api'
 import {
   bhwRegionalData,
   bhwMonthlyTrend,
@@ -21,71 +25,81 @@ import {
   type BHWCoverageGap,
 } from '@/lib/mock-data'
 
+function relativeTime(iso: string | null): string {
+  if (!iso) return 'never'
+  const days = Math.round((Date.now() - new Date(iso).getTime()) / 86400000)
+  if (days < 1) return 'today'
+  return `${days}d ago`
+}
+
 // ─── BHW Regional Table ───────────────────────────────────────
+// Live data: backed by the real /admin/audit/bhw-coverage endpoint.
 
 export function BHWRegionalTable() {
-  const regions: BHWRegionalRow[] = bhwRegionalData
+  const { data, error, loading } = useApi(() => api.bhwCoverage(), [])
+  const rows = data ?? []
 
   return (
-    <div className="border border-slate-200 rounded-lg p-6 mb-6 bg-white">
-      <h3 className="text-sm font-semibold text-slate-900 mb-4">BHW Coverage by Region</h3>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-200">
-              <th className="text-left py-3 px-4 font-semibold text-slate-700">Region</th>
-              <th className="text-left py-3 px-4 font-semibold text-slate-700">Active BHWs</th>
-              <th className="text-left py-3 px-4 font-semibold text-slate-700">Barangays</th>
-              <th className="text-left py-3 px-4 font-semibold text-slate-700">GIDA</th>
-              <th className="text-left py-3 px-4 font-semibold text-slate-700">BHW:HH Ratio</th>
-              <th className="text-left py-3 px-4 font-semibold text-slate-700">Coverage</th>
-            </tr>
-          </thead>
-          <tbody>
-            {regions.map((row) => (
-              <tr key={row.id} className="border-b border-slate-200 hover:bg-slate-50">
-                <td className="py-3 px-4 text-slate-900 font-medium">{row.region}</td>
-                <td className="py-3 px-4 text-slate-600">{row.active}</td>
-                <td className="py-3 px-4 text-slate-600">{row.barangays}</td>
-                <td
-                  className={`py-3 px-4 text-sm font-medium ${
-                    row.gida === 'None'
-                      ? 'text-green-600'
-                      : row.inactive >= 300
-                      ? 'text-red-600'
-                      : 'text-yellow-600'
-                  }`}
-                >
-                  {row.gida}
-                </td>
-                <td className="py-3 px-4 text-slate-600">{row.ratio}</td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 bg-slate-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${
-                          row.coverage >= 95
-                            ? 'bg-green-600'
-                            : row.coverage >= 80
-                            ? 'bg-yellow-600'
-                            : 'bg-red-600'
-                        }`}
-                        style={{ width: `${row.coverage}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-medium text-slate-700">{row.coverage}%</span>
-                  </div>
-                </td>
+    <div className="border border-slate-200 rounded-lg p-6 mb-6 bg-white table-animate">
+      <h3 className="text-sm font-semibold text-slate-900 mb-4">
+        Barangay Coverage Status (ACTIVE vs SILENT — 30-day threshold)
+      </h3>
+
+      {loading && <p className="text-sm text-slate-500 py-8 text-center">Loading coverage…</p>}
+      {error && (
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+          Could not load BHW coverage: {error}
+        </p>
+      )}
+      {!loading && !error && rows.length === 0 && (
+        <p className="text-sm text-slate-500 py-8 text-center">No active BHWs found.</p>
+      )}
+
+      {!loading && !error && rows.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="text-left py-3 px-4 font-semibold text-slate-700">Barangay PSGC</th>
+                <th className="text-left py-3 px-4 font-semibold text-slate-700">Status</th>
+                <th className="text-left py-3 px-4 font-semibold text-slate-700">Records</th>
+                <th className="text-left py-3 px-4 font-semibold text-slate-700">Last Submission</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((row, idx) => (
+                <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50">
+                  <td className="py-3 px-4 text-slate-900 font-medium">
+                    {row.assigned_barangay_psgc ?? 'Unassigned'}
+                  </td>
+                  <td className="py-3 px-4">
+                    <span
+                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                        row.coverage_status === 'ACTIVE'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {row.coverage_status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-slate-600">{row.total_records}</td>
+                  <td className="py-3 px-4 text-slate-600">
+                    {relativeTime(row.last_submission)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
 
 // ─── BHW Charts ───────────────────────────────────────────────
+// NOTE: mock data — the backend has no regional-aggregation / monthly-trend
+// endpoint yet. Wire to the real API once those endpoints exist.
 
 export function BHWCharts() {
   const trend: BHWTrendPoint[] = bhwMonthlyTrend
@@ -150,6 +164,7 @@ export function BHWCharts() {
 }
 
 // ─── BHW Sidebar ──────────────────────────────────────────────
+// NOTE: mock data — no backend endpoint yet for coverage categories / gaps.
 
 export function BHWSidebar() {
   const categories: BHWCoverageCategory[] = bhwCoverageCategories

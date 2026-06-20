@@ -1,4 +1,19 @@
-import { AlertCircle } from 'lucide-react'
+'use client'
+
+import { useState } from 'react'
+import { AlertCircle, Loader2 } from 'lucide-react'
+import { api, ApiError } from '@/lib/api'
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
 
 const datasets = [
   { name: 'ANC Coverage Data', detail: 'Antenatal coverage metrics by region, facility, trimester', rows: '~48,284 rows' },
@@ -10,6 +25,39 @@ const datasets = [
 ]
 
 export function ExportConfiguration() {
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7))
+  const [kind, setKind] = useState<'fhsis-csv' | 'fhsis-json' | 'anonymised'>('fhsis-csv')
+
+  async function handleGenerate() {
+    setBusy(true)
+    setMsg(null)
+    try {
+      if (kind === 'anonymised') {
+        const rows = await api.anonymised()
+        triggerDownload(
+          new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' }),
+          `anonymised_export_${new Date().toISOString().slice(0, 10)}.json`,
+        )
+      } else if (kind === 'fhsis-json') {
+        const blob = await api.fhsisBlob(month, 'json')
+        triggerDownload(blob, `FHSIS_${month}.json`)
+      } else {
+        const blob = await api.fhsisBlob(month, 'csv')
+        triggerDownload(blob, `FHSIS_${month}.csv`)
+      }
+      setMsg({ kind: 'ok', text: 'Export downloaded.' })
+    } catch (e) {
+      setMsg({
+        kind: 'err',
+        text: e instanceof ApiError ? e.message : 'Export failed.',
+      })
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="border border-slate-200 rounded-lg p-6 bg-white mb-6">
       <h3 className="text-sm font-semibold text-slate-900 mb-6">Export Configuration</h3>
@@ -194,17 +242,52 @@ export function ExportConfiguration() {
                 </label>
               </div>
             </div>
-            <div className="bg-slate-100 rounded p-3 mt-4">
-              <p className="text-xs font-medium text-slate-700 mb-2">Export Preview</p>
-              <div className="space-y-1 text-xs text-slate-600">
-                <div>Dataset: <strong>ANC Coverage Data</strong></div>
-                <div>Est. rows: <strong>48,284</strong></div>
-                <div>Est. file size: <strong>~3.2 MB</strong></div>
-                <div>Format: <strong>CSV</strong></div>
+            <div className="bg-slate-100 rounded p-3 mt-4 space-y-3">
+              <p className="text-xs font-medium text-slate-700">Live Export (connected to backend)</p>
+              <div>
+                <label className="text-xs font-medium text-slate-700 block mb-1">Export Type</label>
+                <select
+                  value={kind}
+                  onChange={(e) => setKind(e.target.value as typeof kind)}
+                  className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                >
+                  <option value="fhsis-csv">FHSIS Monthly (CSV)</option>
+                  <option value="fhsis-json">FHSIS Monthly (JSON)</option>
+                  <option value="anonymised">Anonymised Aggregate (JSON)</option>
+                </select>
               </div>
+              {kind !== 'anonymised' && (
+                <div>
+                  <label className="text-xs font-medium text-slate-700 block mb-1">
+                    Reporting Month
+                  </label>
+                  <input
+                    type="month"
+                    value={month}
+                    onChange={(e) => setMonth(e.target.value)}
+                    className="w-full px-2 py-1.5 border border-slate-200 rounded text-xs bg-white"
+                  />
+                </div>
+              )}
             </div>
-            <button className="w-full px-6 py-3 bg-slate-900 text-white rounded font-medium text-sm hover:bg-slate-800 mt-4">
-              Generate Export
+            {msg && (
+              <p
+                className={`text-xs rounded px-3 py-2 ${
+                  msg.kind === 'ok'
+                    ? 'bg-green-50 text-green-700 border border-green-200'
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}
+              >
+                {msg.text}
+              </p>
+            )}
+            <button
+              onClick={handleGenerate}
+              disabled={busy}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded font-medium text-sm hover:bg-slate-800 disabled:opacity-60 mt-4"
+            >
+              {busy && <Loader2 className="w-4 h-4 animate-spin" />}
+              {busy ? 'Generating…' : 'Generate Export'}
             </button>
           </div>
         </div>

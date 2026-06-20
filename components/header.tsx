@@ -1,7 +1,9 @@
 'use client'
 
-import { Download, Radio, Bell, Map } from 'lucide-react'
+import { Download, Radio, Bell, Map, LogOut } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useSidebar } from './sidebar-context'
+import { useAuth } from '@/lib/auth'
 
 interface HeaderProps {
   title?: string
@@ -11,6 +13,13 @@ interface HeaderProps {
 
 export function Header({ title = 'Executive Dashboard', subtitle = 'National KPI Overview — As of June 7, 2025, 06:45 PHT', showExportMap = false }: HeaderProps) {
   const { isCollapsed } = useSidebar()
+  const { logout } = useAuth()
+  const router = useRouter()
+
+  function handleLogout() {
+    logout()
+    router.replace('/login')
+  }
 
   return (
     <header className={`fixed top-0 right-0 bg-white border-b border-slate-200 z-40 h-24 transition-all duration-300 ease-in-out ${isCollapsed ? 'left-20' : 'left-64'}`}>
@@ -60,6 +69,14 @@ export function Header({ title = 'Executive Dashboard', subtitle = 'National KPI
           <button className="relative p-2 hover:bg-slate-100 rounded-lg transition-all duration-200">
             <Bell className="w-5 h-5 text-slate-600" />
             <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">3</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            title="Sign out"
+            className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign out
           </button>
         </div>
       </div>
