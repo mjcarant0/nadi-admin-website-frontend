@@ -80,8 +80,7 @@ export function NationalANCCoverageTrendChart() {
 
 // ─── ANC Visit Completion Funnel ──────────────────────────────
 
-export function ANCVisitCompletionFunnel() {
-  const data: ANCFunnelStage[] = ancVisitFunnel
+export function ANCVisitCompletionFunnel({ data = ancVisitFunnel }: { data?: ANCFunnelStage[] }) {
 
   // Dropout = difference between first and last stage
   const dropout = data.length >= 2
