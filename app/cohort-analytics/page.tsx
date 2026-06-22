@@ -7,9 +7,16 @@ import { CohortAlert, AdvancedCohortFilters } from '@/components/cohort-filters'
 import { CohortTable, CohortCharts } from '@/components/cohort-content'
 import { CohortSidebar } from '@/components/cohort-sidebar'
 import { useSidebar } from '@/components/sidebar-context'
+import { useApi } from '@/lib/use-api'
+import { api } from '@/lib/api'
+import { toCohortTableRows } from '@/lib/analytics-adapters'
 
 export default function CohortAnalytics() {
   const { isCollapsed } = useSidebar()
+  // Live cohort cross-tab from /admin/cohort-analytics (trimester × barangay,
+  // derived from LMP vs encounter date). Falls back to mock while loading.
+  const { data } = useApi(() => api.cohortAnalytics())
+  const cohortRows = data ? toCohortTableRows(data.cohorts) : undefined
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -26,7 +33,7 @@ export default function CohortAnalytics() {
 
         <div className="grid grid-cols-[1fr_320px] gap-6">
           <div>
-            <CohortTable />
+            <CohortTable data={cohortRows} />
             <CohortCharts />
           </div>
           <CohortSidebar />

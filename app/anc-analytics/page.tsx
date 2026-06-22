@@ -10,9 +10,16 @@ import { ANCRegionalRankings, BenchmarkComparisonCard } from '@/components/anc-r
 import { InterventionFlagsCard } from '@/components/anc-intervention-flags'
 import { Footer } from '@/components/footer'
 import { useSidebar } from '@/components/sidebar-context'
+import { useApi } from '@/lib/use-api'
+import { api } from '@/lib/api'
+import { toAncFunnel } from '@/lib/analytics-adapters'
 
 export default function ANCAnalyticsPage() {
   const { isCollapsed } = useSidebar()
+  // Live ANC analytics from /admin/anc-analytics. The visit funnel maps cleanly to
+  // real per-patient visit counts; other charts keep their mock scaffold for now.
+  const { data } = useApi(() => api.ancAnalytics())
+  const funnel = data ? toAncFunnel(data.funnel) : undefined
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -42,7 +49,7 @@ export default function ANCAnalyticsPage() {
             
             {/* Bottom Charts Grid */}
             <div className="grid grid-cols-2 gap-6">
-              <ANCVisitCompletionFunnel />
+              <ANCVisitCompletionFunnel data={funnel} />
               <CohortPerformanceChart />
             </div>
           </div>

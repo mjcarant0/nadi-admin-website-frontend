@@ -20,30 +20,49 @@ import {
   dangerSignTimeSeries,
   dangerSignRegionalDistribution,
   dangerSignTypeDistribution,
-  type DangerSignTimeSeriesPoint,
   type DangerSignRegionalDistribution,
   type DangerSignTypeDistribution,
 } from '@/lib/mock-data'
 
 // ─── 12-Month Time Series ─────────────────────────────────────
 
-export function DangerSignTimeSeriesChart() {
-  const data: DangerSignTimeSeriesPoint[] = dangerSignTimeSeries
+// One plotted line: a data key plus its label/colour. Defaults reproduce the
+// original mock series; the live page passes the real WHO danger-sign taxonomy.
+export interface DangerSeries {
+  key: string
+  name: string
+  color: string
+}
 
+const DEFAULT_DANGER_SERIES: DangerSeries[] = [
+  { key: 'preeclampsia', name: 'Preeclampsia', color: '#ef4444' },
+  { key: 'hemorrhage', name: 'Hemorrhage', color: '#f59e0b' },
+  { key: 'other', name: 'Other Signs', color: '#9ca3af' },
+]
+
+export function DangerSignTimeSeriesChart({
+  data = dangerSignTimeSeries as unknown as Array<Record<string, number | string>>,
+  series = DEFAULT_DANGER_SERIES,
+  xKey = 'date',
+}: {
+  data?: Array<Record<string, number | string>>
+  series?: DangerSeries[]
+  xKey?: string
+}) {
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-slate-900">
-          Danger Sign Incidence — 12-Month Time Series
+          Danger Sign Incidence — Monthly Time Series
         </h3>
         <p className="text-sm text-slate-500">
-          Monthly case counts for preeclampsia, hemorrhage, and other danger signs nationwide
+          Monthly case counts per WHO danger-sign type, nationwide
         </p>
       </div>
       <ResponsiveContainer width="100%" height={350}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis dataKey="date" stroke="#64748b" style={{ fontSize: '12px' }} />
+          <XAxis dataKey={xKey} stroke="#64748b" style={{ fontSize: '12px' }} />
           <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
           <Tooltip
             contentStyle={{
@@ -53,30 +72,17 @@ export function DangerSignTimeSeriesChart() {
             }}
           />
           <Legend />
-          <Line
-            type="monotone"
-            dataKey="preeclampsia"
-            stroke="#ef4444"
-            name="Preeclampsia"
-            strokeWidth={2}
-            dot={{ r: 4 }}
-          />
-          <Line
-            type="monotone"
-            dataKey="hemorrhage"
-            stroke="#f59e0b"
-            name="Hemorrhage"
-            strokeWidth={2}
-            dot={{ r: 4 }}
-          />
-          <Line
-            type="monotone"
-            dataKey="other"
-            stroke="#9ca3af"
-            name="Other Signs"
-            strokeWidth={2}
-            dot={{ r: 4 }}
-          />
+          {series.map((s) => (
+            <Line
+              key={s.key}
+              type="monotone"
+              dataKey={s.key}
+              stroke={s.color}
+              name={s.name}
+              strokeWidth={2}
+              dot={{ r: 4 }}
+            />
+          ))}
         </LineChart>
       </ResponsiveContainer>
     </div>

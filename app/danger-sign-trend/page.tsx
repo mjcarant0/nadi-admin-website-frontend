@@ -9,9 +9,18 @@ import { DangerSignTimeSeriesChart, RegionalCaseDistributionChart, DangerSignDis
 import { DangerSignSidebar } from '@/components/danger-sign-sidebar'
 import { Footer } from '@/components/footer'
 import { useSidebar } from '@/components/sidebar-context'
+import { useApi } from '@/lib/use-api'
+import { api } from '@/lib/api'
+import { toDangerSeries, dangerTimeSeriesData } from '@/lib/analytics-adapters'
 
 export default function DangerSignTrendPage() {
   const { isCollapsed } = useSidebar()
+  // Live danger-sign trend from /admin/danger-sign-trend. The time-series renders
+  // the real WHO danger-sign taxonomy (one line per type) rather than the mock's
+  // preeclampsia/hemorrhage/other; other widgets keep their mock scaffold.
+  const { data } = useApi(() => api.dangerSignTrend())
+  const tsData = data ? dangerTimeSeriesData(data) : undefined
+  const tsSeries = data ? toDangerSeries(data.danger_types) : undefined
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -37,7 +46,7 @@ export default function DangerSignTrendPage() {
         <div className="grid grid-cols-[65%_35%] gap-6 mb-6">
           {/* Left Column - Charts */}
           <div className="space-y-6">
-            <DangerSignTimeSeriesChart />
+            <DangerSignTimeSeriesChart data={tsData} series={tsSeries} xKey={tsData ? 'month' : 'date'} />
             
             {/* Bottom Charts Grid */}
             <div className="grid grid-cols-2 gap-6">

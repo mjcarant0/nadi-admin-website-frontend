@@ -27,6 +27,8 @@ components/              UI components
 lib/
   api.ts                 typed client for the admin backend (NEXT_PUBLIC_API_URL)
   use-api.ts             useApi() hook (loading/error/data)
+  analytics-adapters.ts  maps backend analytics payloads → chart/table display shapes
+  mock-data.ts           typed presentational scaffold + loading/fallback shapes
   auth.tsx               auth provider (JWT in localStorage)
 ```
 
@@ -65,6 +67,27 @@ browser, so the renderer is loaded with `dynamic(..., { ssr: false })`.
 
 The map is empty until the database has synced encounters carrying coordinates
 (submit visits from the mobile PWA, or use the seeded demo data).
+
+## Population analytics views
+
+The **ANC Analytics**, **Danger Sign Trend**, **Cohort Analytics**, and **Node
+Health** pages are backed by real read-only endpoints (previously static mockups).
+Each page fetches via `useApi(() => api.ancAnalytics() | dangerSignTrend() |
+cohortAnalytics() | nodeHealth())` and feeds the live data into its charts/table
+through `lib/analytics-adapters.ts`; while loading (or if the backend is down) the
+component falls back to its `mock-data.ts` shape so the page never blanks.
+
+| Page | Live element (others keep the mock scaffold) |
+|------|----------------------------------------------|
+| `/node-health` | KPI cards + "Node Status by Region" table — fully live |
+| `/anc-analytics` | "ANC Visit Completion Funnel" |
+| `/danger-sign-trend` | "Danger Sign Incidence" time-series (one line per **real WHO danger type**) |
+| `/cohort-analytics` | "Cross-Tab Analysis" table (trimester × barangay) |
+
+Node Health needs the `edge_node_health` table (mobile backend migration `0007`,
+seeded by its `migrate` step); the other three derive from synced encounters. Each
+page's network tab shows the live `/api/v1/admin/...` call. See `backend/README.md`
+for the endpoints and a curl smoke test.
 
 ## Build / typecheck
 
