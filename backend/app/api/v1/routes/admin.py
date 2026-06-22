@@ -261,6 +261,267 @@ async def get_sync_audit_log(
     return [dict(r) for r in result.mappings().all()]
 
 
+@router.get("/anc-analytics")
+async def get_anc_analytics(
+    db: AsyncSession = Depends(get_db),
+    psgc_prefix: Optional[str] = Query(default=None),
+):
+    """Derived ANC coverage analytics — monthly ANC1/ANC4 trend, visit funnel, and
+    per-barangay coverage — computed from `encounters` / `patients`. Replaces the
+    static `ancCoverageTrend` / `ancVisitFunnel` / `ancRegionalCoverage` mocks."""
+    where = "WHERE 1=1"
+    params: dict = {}
+    if psgc_prefix:
+        where += " AND p.psgc_code LIKE :psgc_prefix"
+        params["psgc_prefix"] = f"{psgc_prefix}%"
+
+    # Per-patient visit ordinals so we can derive ANC1 (first visit in a month) and
+    # ANC4 (the month a patient reaches her 4th visit).
+    trend = await db.execute(
+        text(
+            f"""
+            WITH ranked AS (
+                SELECT e.patient_id,
+                       DATE_TRUNC('month', e.encounter_date) AS month,
+                       ROW_NUMBER() OVER (PARTITION BY e.patient_id ORDER BY e.encounter_date) AS visit_no
+                FROM encounters e
+                JOIN patients p ON e.patient_id = p.id
+                {where}
+            )
+            SELECT TO_CHAR(month, 'YYYY-MM') AS month,
+                   COUNT(*) FILTER (WHERE visit_no = 1) AS anc1,
+                   COUNT(*) FILTER (WHERE visit_no = 4) AS anc4
+            FROM ranked
+            GROUP BY month
+            ORDER BY month
+            """
+        ),
+        params,
+    )
+    coverage_trend = [dict(r) for r in trend.mappings().all()]
+
+    # Visit funnel: how many patients reached at least N visits (ANC1..ANC8).
+    funnel_rows = await db.execute(
+        text(
+            f"""
+            WITH counts AS (
+                SELECT e.patient_id, COUNT(*) AS visits
+                FROM encounters e
+                JOIN patients p ON e.patient_id = p.id
+                {where}
+                GROUP BY e.patient_id
+            )
+            SELECT n AS stage,
+                   (SELECT COUNT(*) FROM counts WHERE visits >= n) AS patients
+            FROM generate_series(1, 8) AS n
+            ORDER BY n
+            """
+        ),
+        params,
+    )
+    funnel = [{"stage": f"ANC{r['stage']}", "value": r["patients"]} for r in funnel_rows.mappings().all()]
+
+    regional = await db.execute(
+        text(
+            f"""
+            WITH pvc AS (
+                SELECT e.patient_id, p.psgc_code, COUNT(e.id) AS visit_count
+                FROM encounters e
+                JOIN patients p ON e.patient_id = p.id
+                {where}
+                GROUP BY e.patient_id, p.psgc_code
+            )
+            SELECT psgc_code,
+                   COUNT(*) AS total_registered,
+                   SUM(CASE WHEN visit_count >= 1 THEN 1 ELSE 0 END) AS anc1_count,
+                   SUM(CASE WHEN visit_count >= 4 THEN 1 ELSE 0 END) AS anc4_count,
+                   ROUND(100.0 * SUM(CASE WHEN visit_count >= 4 THEN 1 ELSE 0 END) / COUNT(*), 1)
+                       AS coverage_rate
+            FROM pvc
+            GROUP BY psgc_code
+            ORDER BY coverage_rate ASC
+            """
+        ),
+        params,
+    )
+    return {
+        "coverage_trend": coverage_trend,
+        "funnel": funnel,
+        "regional_coverage": [dict(r) for r in regional.mappings().all()],
+    }
+
+
+# WHO danger-sign enum values (see base_enums.WHODangerSignType) we report on.
+_DANGER_TYPES = [
+    "SEVERE_PREECLAMPSIA",
+    "HYPERTENSION",
+    "HYPOXIA",
+    "ABNORMAL_FHR",
+    "INFECTION_SEPSIS",
+]
+
+
+@router.get("/danger-sign-trend")
+async def get_danger_sign_trend(
+    db: AsyncSession = Depends(get_db),
+    psgc_prefix: Optional[str] = Query(default=None),
+):
+    """Danger-sign trend analytics derived from `encounters.who_danger_flags`:
+    monthly time-series per WHO danger type, per-region distribution, and overall
+    type distribution. Replaces the static dangerSign* mocks (uses the real WHO
+    danger-sign taxonomy rather than the mock's preeclampsia/hemorrhage/other)."""
+    where = "WHERE COALESCE(e.who_danger_flags, '[]'::jsonb) != '[]'::jsonb"
+    params: dict = {}
+    if psgc_prefix:
+        where += " AND p.psgc_code LIKE :psgc_prefix"
+        params["psgc_prefix"] = f"{psgc_prefix}%"
+
+    # Explode the danger-flag JSONB array so each flagged alert_type is one row.
+    base_cte = f"""
+        WITH flags AS (
+            SELECT DATE_TRUNC('month', e.encounter_date) AS month,
+                   p.psgc_code,
+                   (flag->>'alert_type') AS alert_type
+            FROM encounters e
+            JOIN patients p ON e.patient_id = p.id
+            CROSS JOIN LATERAL jsonb_array_elements(e.who_danger_flags) AS flag
+            {where}
+        )
+    """
+
+    ts = await db.execute(
+        text(base_cte + """
+            SELECT TO_CHAR(month, 'YYYY-MM') AS month, alert_type, COUNT(*) AS count
+            FROM flags GROUP BY month, alert_type ORDER BY month
+        """),
+        params,
+    )
+    # Pivot into [{month, <type>: n, ...}] so the chart can read one row per month.
+    months: dict[str, dict] = {}
+    for r in ts.mappings().all():
+        m = months.setdefault(r["month"], {"month": r["month"], **{t: 0 for t in _DANGER_TYPES}})
+        if r["alert_type"] in m:
+            m[r["alert_type"]] = r["count"]
+    time_series = list(months.values())
+
+    regional = await db.execute(
+        text(base_cte + """
+            SELECT psgc_code, alert_type, COUNT(*) AS count
+            FROM flags GROUP BY psgc_code, alert_type ORDER BY psgc_code
+        """),
+        params,
+    )
+    types = await db.execute(
+        text(base_cte + """
+            SELECT alert_type, COUNT(*) AS count
+            FROM flags GROUP BY alert_type ORDER BY count DESC
+        """),
+        params,
+    )
+    return {
+        "danger_types": _DANGER_TYPES,
+        "time_series": time_series,
+        "regional_distribution": [dict(r) for r in regional.mappings().all()],
+        "type_distribution": [dict(r) for r in types.mappings().all()],
+    }
+
+
+@router.get("/cohort-analytics")
+async def get_cohort_analytics(
+    db: AsyncSession = Depends(get_db),
+    psgc_prefix: Optional[str] = Query(default=None),
+):
+    """Cohort breakdown by gestational trimester × barangay, derived from
+    `patients.lmp_date` vs `encounters.encounter_date`. Trimester boundaries: T1 <14
+    wks, T2 14–27 wks, T3 ≥28 wks. Replaces the static in-component cohort mock."""
+    where = "WHERE p.lmp_date IS NOT NULL"
+    params: dict = {}
+    if psgc_prefix:
+        where += " AND p.psgc_code LIKE :psgc_prefix"
+        params["psgc_prefix"] = f"{psgc_prefix}%"
+
+    rows = await db.execute(
+        text(
+            f"""
+            WITH latest AS (
+                SELECT DISTINCT ON (e.patient_id)
+                       e.patient_id,
+                       p.psgc_code,
+                       GREATEST(0, (e.encounter_date::date - p.lmp_date)) / 7 AS aog_weeks,
+                       COALESCE(e.who_danger_flags, '[]'::jsonb) != '[]'::jsonb AS flagged
+                FROM encounters e
+                JOIN patients p ON e.patient_id = p.id
+                {where}
+                ORDER BY e.patient_id, e.encounter_date DESC
+            )
+            SELECT psgc_code,
+                   COUNT(*) AS total,
+                   COUNT(*) FILTER (WHERE aog_weeks < 14) AS tri1,
+                   COUNT(*) FILTER (WHERE aog_weeks >= 14 AND aog_weeks < 28) AS tri2,
+                   COUNT(*) FILTER (WHERE aog_weeks >= 28) AS tri3,
+                   COUNT(*) FILTER (WHERE flagged) AS danger
+            FROM latest
+            GROUP BY psgc_code
+            ORDER BY total DESC
+            """
+        ),
+        params,
+    )
+    return {"cohorts": [dict(r) for r in rows.mappings().all()]}
+
+
+@router.get("/node-health")
+async def get_node_health(db: AsyncSession = Depends(get_db)):
+    """Edge node diagnostics from `edge_node_health` (heartbeat-fed). Returns rollup
+    KPIs plus one row per node. Backs the admin Node Health view; replaces the
+    static nodeKPICards / nodeRegionalStatus mocks."""
+    result = await db.execute(
+        text(
+            """
+            SELECT node_id, region, psgc_code, status,
+                   last_heartbeat, cpu_pct, memory_pct, uptime_pct,
+                   queued_syncs, app_version
+            FROM edge_node_health
+            ORDER BY region NULLS LAST, node_id
+            """
+        )
+    )
+    nodes = []
+    for r in result.mappings().all():
+        nodes.append(
+            {
+                "node_id": r["node_id"],
+                "region": r["region"],
+                "psgc_code": r["psgc_code"],
+                "status": r["status"],
+                "last_heartbeat": r["last_heartbeat"].isoformat() if r["last_heartbeat"] else None,
+                "cpu_pct": r["cpu_pct"],
+                "memory_pct": r["memory_pct"],
+                "uptime_pct": r["uptime_pct"],
+                "queued_syncs": r["queued_syncs"],
+                "app_version": r["app_version"],
+            }
+        )
+
+    total = len(nodes)
+    online = sum(1 for n in nodes if n["status"] == "online")
+    degraded = sum(1 for n in nodes if n["status"] == "degraded")
+    offline = sum(1 for n in nodes if n["status"] == "offline")
+    uptimes = [n["uptime_pct"] for n in nodes if n["uptime_pct"] is not None]
+    avg_uptime = round(sum(uptimes) / len(uptimes), 1) if uptimes else 0.0
+
+    return {
+        "kpis": {
+            "total": total,
+            "online": online,
+            "degraded": degraded,
+            "offline": offline,
+            "avg_uptime": avg_uptime,
+        },
+        "nodes": nodes,
+    }
+
+
 @router.get("/audit/bhw-coverage")
 async def get_bhw_coverage_map(db: AsyncSession = Depends(get_db)):
     """ACTIVE vs SILENT barangay detection (30-day threshold)."""

@@ -1,6 +1,17 @@
 import { BarChart, Bar, LineChart, Line, ComposedChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts'
 
-const cohortData = [
+export interface CohortTableRow {
+  region: string
+  tri1: number
+  tri2: number
+  tri3: number
+  danger: number
+  risk: number
+  preterm: number
+  total: number
+}
+
+const cohortData: CohortTableRow[] = [
   { region: 'NCR', tri1: 1842, tri2: 2614, tri3: 1908, danger: 1204, risk: 842, preterm: 312, total: 6364 },
   { region: 'Eastern Visayas', tri1: 614, tri2: 891, tri3: 724, danger: 1047, risk: 934, preterm: 413, total: 2229 },
   { region: 'BARMM', tri1: 487, tri2: 712, tri3: 598, danger: 1621, risk: 1284, preterm: 671, total: 1797 },
@@ -49,7 +60,7 @@ const riskBreakdown = [
   { name: 'High Risk', value: 25.0, color: '#ef4444' }
 ]
 
-export function CohortTable() {
+export function CohortTable({ data = cohortData }: { data?: CohortTableRow[] }) {
   return (
     <div className="border border-slate-200 rounded-lg p-6 mb-6 bg-white">
       <h3 className="text-sm font-semibold text-slate-900 mb-4">Cross-Tab Analysis — Danger Signs × Gestational Age × Region</h3>
@@ -76,7 +87,7 @@ export function CohortTable() {
             </tr>
           </thead>
           <tbody>
-            {cohortData.map((row, idx) => (
+            {data.map((row, idx) => (
               <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50">
                 <td className="py-3 px-4 text-slate-900 font-medium">{row.region}</td>
                 <td className="py-3 px-4 text-center text-slate-600">{row.tri1}</td>

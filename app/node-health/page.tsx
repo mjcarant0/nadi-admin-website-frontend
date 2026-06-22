@@ -10,9 +10,17 @@ import { NodeStatusTable } from '@/components/node-status-table'
 import { NodeSidebar } from '@/components/node-sidebar'
 import { Footer } from '@/components/footer'
 import { useSidebar } from '@/components/sidebar-context'
+import { useApi } from '@/lib/use-api'
+import { api } from '@/lib/api'
+import { toNodeKPICards, toNodeRegionalStatus } from '@/lib/analytics-adapters'
 
 export default function NodeHealthMonitoring() {
   const { isCollapsed } = useSidebar()
+  // Live edge-node telemetry from /admin/node-health (seeded + heartbeat-fed).
+  // While loading or on error, the components fall back to their mock defaults.
+  const { data } = useApi(() => api.nodeHealth())
+  const kpiCards = data ? toNodeKPICards(data.kpis) : undefined
+  const regionalNodes = data ? toNodeRegionalStatus(data.nodes) : undefined
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -28,7 +36,7 @@ export default function NodeHealthMonitoring() {
         <NodeHealthAlert />
 
         {/* KPI Cards */}
-        <NodeKPICards />
+        <NodeKPICards cards={kpiCards} />
 
         {/* Tabs */}
         <NodeTabs />
@@ -37,7 +45,7 @@ export default function NodeHealthMonitoring() {
         <div className="grid grid-cols-[65%_35%] gap-6 mb-6">
           {/* Left Column */}
           <div className="space-y-6">
-            <NodeStatusTable />
+            <NodeStatusTable nodes={regionalNodes} />
             
             {/* Charts */}
             <div className="grid grid-cols-2 gap-6">

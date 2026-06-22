@@ -10,8 +10,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Shield,
 }
 
-export function NodeKPICards() {
-  const cards: NodeKPICard[] = nodeKPICards
+export function NodeKPICards({ cards = nodeKPICards }: { cards?: NodeKPICard[] }) {
 
   return (
     <div className="grid grid-cols-6 gap-4 mb-6">

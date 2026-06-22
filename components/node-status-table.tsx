@@ -17,8 +17,7 @@ function getStatusColor(status: NodeStatus) {
   return 'text-red-600'
 }
 
-export function NodeStatusTable() {
-  const nodes: NodeRegionalStatus[] = nodeRegionalStatus
+export function NodeStatusTable({ nodes = nodeRegionalStatus }: { nodes?: NodeRegionalStatus[] }) {
 
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 table-animate">

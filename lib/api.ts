@@ -149,6 +149,93 @@ export interface AnonymisedRow {
   danger_flag_count: number
 }
 
+// ── Secondary analytics (derived endpoints) ───────────────────────────────
+
+export interface AncCoverageTrendRow {
+  month: string
+  anc1: number
+  anc4: number
+}
+
+export interface AncFunnelRow {
+  stage: string
+  value: number
+}
+
+export interface AncRegionalRow {
+  psgc_code: string
+  total_registered: number
+  anc1_count: number
+  anc4_count: number
+  coverage_rate: number
+}
+
+export interface AncAnalytics {
+  coverage_trend: AncCoverageTrendRow[]
+  funnel: AncFunnelRow[]
+  regional_coverage: AncRegionalRow[]
+}
+
+export interface DangerTimeSeriesRow {
+  month: string
+  [dangerType: string]: number | string
+}
+
+export interface DangerRegionalRow {
+  psgc_code: string
+  alert_type: string
+  count: number
+}
+
+export interface DangerTypeRow {
+  alert_type: string
+  count: number
+}
+
+export interface DangerSignTrend {
+  danger_types: string[]
+  time_series: DangerTimeSeriesRow[]
+  regional_distribution: DangerRegionalRow[]
+  type_distribution: DangerTypeRow[]
+}
+
+export interface CohortRow {
+  psgc_code: string
+  total: number
+  tri1: number
+  tri2: number
+  tri3: number
+  danger: number
+}
+
+export interface CohortAnalytics {
+  cohorts: CohortRow[]
+}
+
+export interface NodeHealthRow {
+  node_id: string
+  region: string | null
+  psgc_code: string | null
+  status: string
+  last_heartbeat: string | null
+  cpu_pct: number | null
+  memory_pct: number | null
+  uptime_pct: number | null
+  queued_syncs: number | null
+  app_version: string | null
+}
+
+export interface NodeHealth {
+  kpis: {
+    total: number
+    online: number
+    degraded: number
+    offline: number
+    avg_uptime: number
+  }
+  nodes: NodeHealthRow[]
+}
+
 // ── Endpoints ────────────────────────────────────────────────────────────
 
 export const api = {
@@ -177,6 +264,22 @@ export const api = {
     return request<{ coverage_by_barangay: CoverageRow[] }>('/admin/coverage', {
       query: { psgc_code },
     })
+  },
+
+  ancAnalytics(psgc_prefix?: string) {
+    return request<AncAnalytics>('/admin/anc-analytics', { query: { psgc_prefix } })
+  },
+
+  dangerSignTrend(psgc_prefix?: string) {
+    return request<DangerSignTrend>('/admin/danger-sign-trend', { query: { psgc_prefix } })
+  },
+
+  cohortAnalytics(psgc_prefix?: string) {
+    return request<CohortAnalytics>('/admin/cohort-analytics', { query: { psgc_prefix } })
+  },
+
+  nodeHealth() {
+    return request<NodeHealth>('/admin/node-health')
   },
 
   syncLog(limit = 100) {
